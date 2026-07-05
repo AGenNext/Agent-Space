@@ -8,6 +8,10 @@ Agent-Space defines the workspace/context boundary where agent work happens.
 
 A space can represent a tenant, project, team, customer environment, operational workspace, or managed infrastructure domain.
 
+## Roadmap
+
+- [Product Roadmap](ROADMAP.md)
+
 ## Scope
 
 Agent-Space owns:
@@ -50,6 +54,7 @@ Agent-Space does not own:
 
 | Reference | Role in Agent-Space |
 |---|---|
+| [CNCF Cloud Native Storage Landscape](docs/cncf-cloud-native-storage.md) | Upstream ecosystem map for runtime cloud-native storage decisions. |
 | [Hugging Face Spaces](docs/hugging-face-spaces.md) | Public ML, agent, Gradio, Docker, and static demo surfaces mapped to governed spaces. |
 | [Spacedrive](docs/spacedrive.md) | Local-first file, device, cloud, and source surface for space context discovery. |
 | [Spacebot](docs/spacebot.md) | Agent/team operating model with channels, workers, branches, memory, cron, and adapters. |
