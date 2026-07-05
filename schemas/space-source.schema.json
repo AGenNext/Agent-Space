@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agennext.dev/schemas/agent-space/space-source.schema.json",
+  "title": "Agent-Space Source",
+  "description": "External or internal source attached to a governed Agent-Space boundary.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "space_id", "type", "provider", "reference", "status", "created_at", "updated_at"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^source:[a-zA-Z0-9][a-zA-Z0-9-_.:@]{1,191}$"
+    },
+    "space_id": {
+      "type": "string",
+      "pattern": "^space:[a-z0-9][a-z0-9-_.]{1,127}$"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["file", "folder", "bucket", "repository", "device", "cloud", "database", "url", "external-system", "dataset", "message-channel"]
+    },
+    "provider": {
+      "type": "string",
+      "enum": ["local", "github", "spacedrive", "rustfs", "cubefs", "s3", "gcs", "azure-blob", "huggingface", "slack", "google-drive", "other"]
+    },
+    "reference": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048
+    },
+    "status": {
+      "type": "string",
+      "enum": ["attached", "available", "offline", "restricted", "revoked", "archived"]
+    },
+    "classification": {
+      "type": "string",
+      "enum": ["public", "internal", "confidential", "restricted"]
+    },
+    "content_hash": {
+      "type": "string",
+      "maxLength": 256
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "policy_refs": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^policy:[a-zA-Z0-9][a-zA-Z0-9-_.:@]{1,191}$" },
+      "uniqueItems": true,
+      "default": []
+    },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" }
+  }
+}
