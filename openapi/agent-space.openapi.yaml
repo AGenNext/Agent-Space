@@ -1,0 +1,419 @@
+openapi: 3.1.0
+info:
+  title: Agent-Space API
+  version: 0.1.0
+  summary: Governed workspace boundary API for AGenNext agentic work.
+  description: |
+    Agent-Space defines where agent work belongs and what boundaries apply.
+    Every run, source, artifact, storage binding, member, and lifecycle action must resolve to a space.
+servers:
+  - url: https://api.agennext.dev/agent-space/v1
+    description: Production API placeholder
+  - url: http://localhost:8080/v1
+    description: Local development
+paths:
+  /spaces:
+    get:
+      summary: List spaces
+      operationId: listSpaces
+      responses:
+        "200":
+          description: Spaces returned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Space"
+    post:
+      summary: Create a space
+      operationId: createSpace
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSpaceRequest"
+      responses:
+        "201":
+          description: Space created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Space"
+  /spaces/{space_id}:
+    parameters:
+      - $ref: "#/components/parameters/SpaceId"
+    get:
+      summary: Read a space
+      operationId: getSpace
+      responses:
+        "200":
+          description: Space returned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Space"
+    patch:
+      summary: Update a space
+      operationId: updateSpace
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateSpaceRequest"
+      responses:
+        "200":
+          description: Space updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Space"
+  /spaces/{space_id}/members:
+    parameters:
+      - $ref: "#/components/parameters/SpaceId"
+    get:
+      summary: List space members
+      operationId: listSpaceMembers
+      responses:
+        "200":
+          description: Members returned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/SpaceMember"
+    post:
+      summary: Add a member to a space
+      operationId: addSpaceMember
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSpaceMemberRequest"
+      responses:
+        "201":
+          description: Member added
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SpaceMember"
+  /spaces/{space_id}/sources:
+    parameters:
+      - $ref: "#/components/parameters/SpaceId"
+    get:
+      summary: List sources attached to a space
+      operationId: listSpaceSources
+      responses:
+        "200":
+          description: Sources returned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/SpaceSource"
+    post:
+      summary: Attach a source to a space
+      operationId: attachSpaceSource
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSpaceSourceRequest"
+      responses:
+        "201":
+          description: Source attached
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SpaceSource"
+  /spaces/{space_id}/artifacts:
+    parameters:
+      - $ref: "#/components/parameters/SpaceId"
+    get:
+      summary: List artifacts owned by a space
+      operationId: listSpaceArtifacts
+      responses:
+        "200":
+          description: Artifacts returned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/SpaceArtifact"
+  /spaces/{space_id}/storage-bindings:
+    parameters:
+      - $ref: "#/components/parameters/SpaceId"
+    get:
+      summary: List storage bindings for a space
+      operationId: listStorageBindings
+      responses:
+        "200":
+          description: Storage bindings returned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/StorageBinding"
+    post:
+      summary: Attach a storage backend to a space
+      operationId: createStorageBinding
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateStorageBindingRequest"
+      responses:
+        "201":
+          description: Storage binding created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StorageBinding"
+  /spaces/{space_id}/archive:
+    parameters:
+      - $ref: "#/components/parameters/SpaceId"
+    post:
+      summary: Archive a space
+      operationId: archiveSpace
+      responses:
+        "200":
+          description: Space archived
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Space"
+  /spaces/{space_id}/retire:
+    parameters:
+      - $ref: "#/components/parameters/SpaceId"
+    post:
+      summary: Retire a space
+      operationId: retireSpace
+      responses:
+        "200":
+          description: Space retired
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Space"
+components:
+  parameters:
+    SpaceId:
+      name: space_id
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: "^space:[a-z0-9][a-z0-9-_.]{1,127}$"
+  schemas:
+    Space:
+      type: object
+      required: [id, name, type, status, classification, owner_id, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          example: space:customer-acme
+        name:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+          enum: [personal, team, project, tenant, customer, lab, production, demo, archive, compliance-review]
+        status:
+          type: string
+          enum: [draft, active, restricted, review, archived, retired]
+        classification:
+          type: string
+          enum: [public, internal, confidential, restricted]
+        owner_id:
+          type: string
+          example: user:chinmay
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    CreateSpaceRequest:
+      type: object
+      required: [name, type, classification, owner_id]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+        classification:
+          type: string
+        owner_id:
+          type: string
+    UpdateSpaceRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+        classification:
+          type: string
+    SpaceMember:
+      type: object
+      required: [id, space_id, principal_id, role, status, created_at, updated_at]
+      properties:
+        id:
+          type: string
+        space_id:
+          type: string
+        principal_id:
+          type: string
+        role:
+          type: string
+          enum: [owner, admin, operator, contributor, viewer, auditor]
+        status:
+          type: string
+          enum: [invited, active, suspended, removed]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    CreateSpaceMemberRequest:
+      type: object
+      required: [principal_id, role]
+      properties:
+        principal_id:
+          type: string
+        role:
+          type: string
+    SpaceSource:
+      type: object
+      required: [id, space_id, type, provider, reference, status, created_at, updated_at]
+      properties:
+        id:
+          type: string
+        space_id:
+          type: string
+        type:
+          type: string
+        provider:
+          type: string
+        reference:
+          type: string
+        status:
+          type: string
+        classification:
+          type: string
+        content_hash:
+          type: string
+        provenance:
+          type: object
+    CreateSpaceSourceRequest:
+      type: object
+      required: [type, provider, reference]
+      properties:
+        type:
+          type: string
+        provider:
+          type: string
+        reference:
+          type: string
+        classification:
+          type: string
+        provenance:
+          type: object
+    SpaceArtifact:
+      type: object
+      required: [id, space_id, type, storage_ref, status, created_at, updated_at]
+      properties:
+        id:
+          type: string
+        space_id:
+          type: string
+        run_id:
+          type: string
+        type:
+          type: string
+        storage_ref:
+          type: string
+        status:
+          type: string
+        classification:
+          type: string
+        retention_class:
+          type: string
+        provenance:
+          type: object
+    StorageBinding:
+      type: object
+      required: [id, space_id, provider, purpose, status, created_at, updated_at]
+      properties:
+        id:
+          type: string
+        space_id:
+          type: string
+        provider:
+          type: string
+        access_protocols:
+          type: array
+          items:
+            type: string
+        purpose:
+          type: string
+        status:
+          type: string
+        endpoint_ref:
+          type: string
+        bucket_or_volume:
+          type: string
+        versioning:
+          type: boolean
+        object_lock:
+          type: boolean
+    CreateStorageBindingRequest:
+      type: object
+      required: [provider, access_protocols, purpose]
+      properties:
+        provider:
+          type: string
+        access_protocols:
+          type: array
+          items:
+            type: string
+        purpose:
+          type: string
+        endpoint_ref:
+          type: string
+        bucket_or_volume:
+          type: string
+        versioning:
+          type: boolean
+        object_lock:
+          type: boolean
