@@ -56,6 +56,7 @@ Agent-Space does not own:
 |---|---|
 | [CNCF Cloud Native Storage Landscape](docs/cncf-cloud-native-storage.md) | Upstream ecosystem map for runtime cloud-native storage decisions. |
 | [Hugging Face Spaces](docs/hugging-face-spaces.md) | Public ML, agent, Gradio, Docker, and static demo surfaces mapped to governed spaces. |
+| [Hugging Face Datasets](docs/hugging-face-datasets.md) | Governed dataset source, dataset artifact, Dataset Viewer, streaming, licensing, and publishing surface. |
 | [Spacedrive](docs/spacedrive.md) | Local-first file, device, cloud, and source surface for space context discovery. |
 | [Spacebot](docs/spacebot.md) | Agent/team operating model with channels, workers, branches, memory, cron, and adapters. |
 | [RustFS](docs/rustfs.md) | S3-compatible object storage backend for artifacts, datasets, evidence, and traces. |
