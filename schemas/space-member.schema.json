@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agennext.dev/schemas/agent-space/space-member.schema.json",
+  "title": "Agent-Space Member",
+  "description": "Membership and role assignment inside a governed Agent-Space boundary.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "space_id", "principal_id", "role", "status", "created_at", "updated_at"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^member:[a-zA-Z0-9][a-zA-Z0-9-_.:@]{1,191}$"
+    },
+    "space_id": {
+      "type": "string",
+      "pattern": "^space:[a-z0-9][a-z0-9-_.]{1,127}$"
+    },
+    "principal_id": {
+      "type": "string",
+      "pattern": "^(user|agent|team|org|service-account):[a-zA-Z0-9][a-zA-Z0-9-_.:@]{1,191}$"
+    },
+    "role": {
+      "type": "string",
+      "enum": ["owner", "admin", "operator", "contributor", "viewer", "auditor"]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["invited", "active", "suspended", "removed"]
+    },
+    "granted_by": {
+      "type": "string",
+      "pattern": "^(user|agent|team|org|service-account):[a-zA-Z0-9][a-zA-Z0-9-_.:@]{1,191}$"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" }
+  }
+}
