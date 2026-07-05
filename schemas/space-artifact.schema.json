@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agennext.dev/schemas/agent-space/space-artifact.schema.json",
+  "title": "Agent-Space Artifact",
+  "description": "Generated or attached artifact owned by an Agent-Space boundary.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "space_id", "type", "storage_ref", "status", "created_at", "updated_at"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^artifact:[a-zA-Z0-9][a-zA-Z0-9-_.:@]{1,191}$"
+    },
+    "space_id": {
+      "type": "string",
+      "pattern": "^space:[a-z0-9][a-z0-9-_.]{1,127}$"
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^run:[a-zA-Z0-9][a-zA-Z0-9-_.:@]{1,191}$"
+    },
+    "agent_id": {
+      "type": "string",
+      "pattern": "^agent:[a-zA-Z0-9][a-zA-Z0-9-_.:@]{1,191}$"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["report", "document", "dataset", "model-output", "trace", "evidence", "export", "image", "audio", "video", "bundle", "other"]
+    },
+    "storage_ref": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "active", "review", "approved", "archived", "deleted", "legal-hold"]
+    },
+    "classification": {
+      "type": "string",
+      "enum": ["public", "internal", "confidential", "restricted"]
+    },
+    "content_hash": {
+      "type": "string",
+      "maxLength": 256
+    },
+    "retention_class": {
+      "type": "string",
+      "enum": ["draft", "active", "archive", "legal-hold"]
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" }
+  }
+}
