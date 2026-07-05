@@ -1,6 +1,6 @@
 # Agent-Space Product Roadmap
 
-Agent-Space is the bounded workspace layer for AGenNext. It defines where agent work belongs, who and what is allowed inside the boundary, which files and memories are in scope, and how runs, artifacts, channels, storage, environments, and permissions are governed.
+Agent-Space is the bounded workspace layer for AGenNext. It defines where agent work belongs, who and what is allowed inside the boundary, which files and memories are in scope, and how runs, artifacts, channels, storage, environments, datasets, and permissions are governed.
 
 This roadmap turns Agent-Space from a conceptual boundary into a production-grade product module.
 
@@ -11,7 +11,7 @@ Every agent action must happen inside an explicit space.
 A space is not just a folder, project, tenant, or chat room. A space is a governed operating boundary for work.
 
 ```txt
-Space = Identity + Context + Files + Memory + Channels + Runs + Storage + Permissions + Lifecycle
+Space = Identity + Context + Files + Datasets + Memory + Channels + Runs + Storage + Permissions + Lifecycle
 ```
 
 Agent-Space should become the canonical workspace primitive for:
@@ -31,10 +31,10 @@ Agent-Space should become the canonical workspace primitive for:
 
 1. Make every agent action explicitly scoped.
 2. Prevent unbounded agent execution.
-3. Attach files, memory, channels, runs, tools, storage, and permissions to a space.
+3. Attach files, datasets, memory, channels, runs, tools, storage, and permissions to a space.
 4. Support local-first, cloud-native, and distributed storage backends.
 5. Provide a clean product UX for creating, entering, operating, auditing, and retiring spaces.
-6. Make Agent-Space interoperable with Agent-Platform, Agent-Identity, Agent-Drive, Agent-Memory, Agent-Runs, Agent-Team, Agent-Channel, and Agent-IGA.
+6. Make Agent-Space interoperable with Agent-Platform, Agent-Identity, Agent-Drive, Agent-Memory, Agent-Runs, Agent-Team, Agent-Channel, Agent-IGA, and dataset providers.
 7. Keep storage backend replaceable while making the space boundary authoritative.
 
 ## Product pillars
@@ -43,11 +43,11 @@ Agent-Space should become the canonical workspace primitive for:
 |---|---|
 | Space Core | Canonical data model, lifecycle, APIs, events, and policies for spaces. |
 | Space UX | Console workflows for creating, browsing, joining, configuring, and retiring spaces. |
-| Space Context | Files, memory, channels, runs, tools, and artifacts attached to the space boundary. |
-| Space Storage | Pluggable storage backends for object, file, volume, local-first, and distributed storage. |
-| Space Governance | Permission scopes, policies, audit trails, retention, provenance, and lifecycle controls. |
-| Space Runtime | Environment bindings, run scoping, tool execution boundaries, and worker limits. |
-| Space Integrations | Hugging Face Spaces, Spacedrive, Spacebot, RustFS, CubeFS, and CNCF storage landscape references. |
+| Space Context | Files, datasets, memory, channels, runs, tools, and artifacts attached to the space boundary. |
+| Space Storage | Pluggable storage backends for object, file, dataset, volume, local-first, and distributed storage. |
+| Space Governance | Permission scopes, policies, audit trails, retention, provenance, licensing, and lifecycle controls. |
+| Space Runtime | Environment bindings, dataset/runtime scoping, tool execution boundaries, and worker limits. |
+| Space Integrations | Hugging Face Spaces, Hugging Face Datasets, Spacedrive, Spacebot, RustFS, CubeFS, and CNCF storage landscape references. |
 | Space Operations | Observability, backups, upgrades, migration, release gates, and production readiness. |
 
 ## North-star user journeys
@@ -75,19 +75,19 @@ The product should capture:
 
 Before an agent or human starts work, the system resolves the active space.
 
-No run, tool call, memory read, file access, or artifact write should happen without a space ID.
+No run, tool call, memory read, file access, dataset load, or artifact write should happen without a space ID.
 
-### 3. Attach files and sources
+### 3. Attach files, datasets, and sources
 
-The user attaches files, folders, drives, object buckets, repositories, or source systems.
+The user attaches files, folders, datasets, drives, object buckets, repositories, or source systems.
 
-Agent-Space records references, provenance, permissions, and data policies without forcing all data into one backend.
+Agent-Space records references, provenance, permissions, licenses, and data policies without forcing all data into one backend.
 
 ### 4. Run agents inside a space
 
-Agents operate only against scoped files, memory, channels, tools, and environments.
+Agents operate only against scoped files, datasets, memory, channels, tools, and environments.
 
-Runs generate traces, outputs, artifacts, and audit records tied back to the space.
+Runs generate traces, outputs, artifacts, datasets, and audit records tied back to the space.
 
 ### 5. Review and govern work
 
@@ -98,6 +98,7 @@ Admins can inspect:
 - which tools were used
 - what memory was read
 - what files were touched
+- which datasets were loaded, streamed, transformed, or published
 - which artifacts were created
 - which policies were enforced
 - what approvals were required
@@ -128,7 +129,7 @@ Retired
 |---|---|
 | Draft | Space exists but cannot run agents yet. |
 | Active | Normal work is allowed. |
-| Restricted | Work is limited due to policy, risk, cost, or ownership issue. |
+| Restricted | Work is limited due to policy, risk, cost, ownership, data, or license issue. |
 | Review | Space is locked for audit, handoff, compliance, or approval. |
 | Archived | Read-only historical state. |
 | Retired | Space is closed and no longer available for active work. |
@@ -167,11 +168,35 @@ space_member:
 space_source:
   id: source:example
   space_id: space:customer-acme
-  type: file | folder | bucket | repository | device | cloud | database | url | external-system
-  provider: local | github | spacedrive | rustfs | cubefs | s3 | gcs | azure | other
+  type: file | folder | bucket | repository | dataset | device | cloud | database | url | external-system
+  provider: local | github | huggingface | spacedrive | rustfs | cubefs | s3 | gcs | azure | other
   reference: uri-or-provider-reference
   policy_id: policy:source-access
   provenance_required: true
+```
+
+### SpaceDataset
+
+```yaml
+space_dataset:
+  id: dataset:example
+  space_id: space:agent-research-lab
+  source_id: source:hf-dataset-example
+  provider: huggingface | rustfs | cubefs | s3 | local | other
+  reference: hf://datasets/org-or-user/dataset-name
+  visibility: public | private | gated
+  license: apache-2.0 | mit | cc-by-4.0 | other | unknown
+  dataset_card_ref: README.md | url | missing
+  viewer_supported: true
+  streaming_supported: true
+  splits:
+    - train
+    - validation
+    - test
+  classification: public | internal | confidential | restricted
+  pii_assessment: none | possible | confirmed | unknown
+  provenance_required: true
+  publish_approval_required: true
 ```
 
 ### SpaceArtifact
@@ -182,7 +207,7 @@ space_artifact:
   space_id: space:customer-acme
   run_id: run:example
   type: report | dataset | model-output | trace | evidence | export | document
-  storage_ref: s3://bucket/key | cubefs://volume/path | local://path
+  storage_ref: s3://bucket/key | cubefs://volume/path | local://path | hf://datasets/org/name
   provenance: required
   retention_class: draft | active | archive | legal-hold
 ```
@@ -197,6 +222,7 @@ space_run:
   objective: summarize-attached-documents
   status: queued | running | waiting-for-approval | succeeded | failed | cancelled
   tools_used: []
+  datasets_used: []
   artifacts_created: []
   audit_required: true
 ```
@@ -229,6 +255,10 @@ GET    /spaces/{space_id}/audit
 GET    /spaces/{space_id}/memory
 POST   /spaces/{space_id}/storage-bindings
 GET    /spaces/{space_id}/storage-bindings
+POST   /spaces/{space_id}/datasets
+GET    /spaces/{space_id}/datasets
+GET    /spaces/{space_id}/datasets/{dataset_id}
+POST   /spaces/{space_id}/datasets/{dataset_id}/validate
 POST   /spaces/{space_id}/exports
 POST   /spaces/{space_id}/handoff
 POST   /spaces/{space_id}/review-lock
@@ -242,6 +272,9 @@ POST   /spaces/{space_id}/federation
 POST   /spaces/{space_id}/replication
 POST   /spaces/{space_id}/legal-hold
 POST   /spaces/{space_id}/cost-policy
+POST   /spaces/{space_id}/datasets/{dataset_id}/bind-runtime
+POST   /spaces/{space_id}/datasets/{dataset_id}/publish
+GET    /spaces/{space_id}/datasets/{dataset_id}/lineage
 GET    /spaces/{space_id}/risk-score
 GET    /spaces/{space_id}/trust-score
 GET    /spaces/{space_id}/lineage
@@ -269,7 +302,8 @@ Space boundary is authoritative.
 | Distributed multi-protocol storage | S3, POSIX, HDFS, CSI, large datasets, shared workspaces. | CubeFS |
 | Kubernetes volume storage | Stateful workloads and mounted runtime volumes. | CSI-compatible backends |
 | Archive storage | Long-term retention and compliance records. | S3-compatible object lock/WORM backends |
-| Demo/public storage | Demo-safe datasets and public artifacts. | Hugging Face Spaces assets, static storage |
+| Dataset collaboration surface | Public/private/gated ML datasets, cards, splits, viewers, and streaming. | Hugging Face Datasets |
+| Demo/public storage | Demo-safe datasets and public artifacts. | Hugging Face Spaces assets, Hugging Face Datasets, static storage |
 
 ### Storage milestones
 
@@ -280,8 +314,8 @@ Space boundary is authoritative.
 | S2 | Add local filesystem development adapter. |
 | S3 | Add RustFS/S3-compatible artifact backend. |
 | S4 | Add CubeFS reference deployment profile. |
-| S5 | Add storage policy engine for classification, retention, and access. |
-| S6 | Add storage audit events for reads, writes, deletes, exports, and retention changes. |
+| S5 | Add storage policy engine for classification, retention, access, and licensing. |
+| S6 | Add storage and dataset audit events for reads, writes, deletes, streams, exports, and retention changes. |
 | S7 | Add backup, restore, migration, and archive workflows. |
 
 ## Integration roadmap
@@ -298,6 +332,24 @@ Milestones:
 - add GitHub Actions sync workflow
 - require `agent_space` metadata for every Space
 - prevent production secrets and production data from public demos
+
+### Hugging Face Datasets
+
+Role: governed dataset source, dataset artifact, dataset viewer, streaming data, and public/private dataset publishing surface.
+
+Milestones:
+
+- define `SpaceDataset` schema
+- support Hugging Face dataset references with `hf://datasets/{owner}/{name}`
+- attach public, private, and gated datasets to a space
+- capture dataset card, license, visibility, splits, file formats, tags, and provenance
+- validate whether Dataset Viewer / Data Studio is available
+- support streaming access only through an active space runtime binding
+- block training, evaluation, benchmarking, export, or publish when license/provenance metadata is missing
+- generate dataset card templates for derived datasets
+- require approval before public dataset publishing
+- prevent restricted, customer, production-secret, or PII-bearing data from being published publicly
+- emit audit events for dataset load, stream, sample, transform, export, and publish actions
 
 ### Spacedrive
 
@@ -358,7 +410,7 @@ Goal: make Agent-Space understandable, installable, and coherent.
 Deliverables:
 
 - README with boundary definition
-- reference docs for Hugging Face Spaces, Spacedrive, Spacebot, RustFS, CubeFS, and CNCF storage
+- reference docs for Hugging Face Spaces, Hugging Face Datasets, Spacedrive, Spacebot, RustFS, CubeFS, and CNCF storage
 - initial roadmap
 - initial architecture diagram text
 - product vocabulary
@@ -381,6 +433,7 @@ Deliverables:
 - `Space` schema
 - `SpaceMember` schema
 - `SpaceSource` schema
+- `SpaceDataset` schema
 - `SpaceArtifact` schema
 - `SpaceRun` reference schema
 - lifecycle transitions
@@ -393,7 +446,7 @@ Exit criteria:
 
 - a space can be created, updated, listed, archived, and retired
 - members can be added and removed
-- sources can be attached
+- sources and datasets can be attached
 - every run requires a space ID
 
 ## Phase 2 — Space Console UX
@@ -407,6 +460,7 @@ Deliverables:
 - space overview page
 - members tab
 - sources tab
+- datasets tab
 - runs tab
 - artifacts tab
 - policies tab
@@ -418,7 +472,7 @@ Exit criteria:
 
 - user can create a space without reading docs
 - user can see what belongs to a space
-- user can understand risk, ownership, and lifecycle state
+- user can understand risk, ownership, data, license, and lifecycle state
 
 ## Phase 3 — Context and Source Attachments
 
@@ -426,12 +480,14 @@ Goal: attach real context safely.
 
 Deliverables:
 
-- file/source attachment model
+- file/source/dataset attachment model
 - source adapter interface
 - local filesystem dev adapter
 - GitHub source reference adapter
+- Hugging Face dataset reference adapter
 - Spacedrive-style source reference contract
 - provenance metadata
+- license metadata
 - offline/unavailable source state
 - content hash model
 - source permission checks
@@ -439,7 +495,8 @@ Deliverables:
 Exit criteria:
 
 - a space can attach external sources without copying everything
-- agents can only access approved sources
+- Hugging Face datasets can be attached by reference
+- agents can only access approved sources and datasets
 - provenance is preserved
 
 ## Phase 4 — Storage Backends
@@ -454,6 +511,7 @@ Deliverables:
 - RustFS reference profile
 - CubeFS reference profile
 - artifact registry
+- dataset artifact registry
 - retention policy model
 - storage audit events
 - export bundle format
@@ -461,6 +519,7 @@ Deliverables:
 Exit criteria:
 
 - artifacts can be stored in object storage
+- datasets can be referenced or stored without changing the space model
 - storage backend can be changed without changing the space model
 - every stored object carries space metadata
 
@@ -474,6 +533,7 @@ Deliverables:
 - tool calls require active space
 - memory reads require active space
 - file reads/writes require active space
+- dataset loads/streams require active space
 - worker scopes
 - branch scopes
 - scheduled work scopes
@@ -484,6 +544,7 @@ Exit criteria:
 
 - no agent run can execute outside a space
 - every tool call can be traced to a space
+- every dataset load can be traced to a space
 - scheduled jobs are governed by space policy
 
 ## Phase 6 — Governance and Compliance
@@ -495,6 +556,7 @@ Deliverables:
 - OPA policy hooks
 - OpenFGA/ReBAC relationship model
 - retention policies
+- dataset license and allowed-use policy checks
 - legal hold
 - review lock
 - approval workflows
@@ -508,20 +570,24 @@ Exit criteria:
 
 - admins can prove what happened in a space
 - restricted spaces cannot perform unsafe actions
+- dataset use, transformation, and publication are auditable
 - compliance artifacts can be exported
 
-## Phase 7 — Public Demo and Marketplace Surfaces
+## Phase 7 — Public Demo, Dataset, and Marketplace Surfaces
 
-Goal: support safe public demos and reusable space templates.
+Goal: support safe public demos, public-safe datasets, and reusable space templates.
 
 Deliverables:
 
 - Hugging Face Spaces demo template
+- Hugging Face Datasets publishing template
 - Gradio demo template
 - Docker Space template
 - static Space template
 - public demo data policy
+- public dataset card template
 - no-secret publication checks
+- dataset license/provenance publication checks
 - demo metadata contract
 - space template registry
 - template install workflow
@@ -529,6 +595,7 @@ Deliverables:
 Exit criteria:
 
 - AGenNext can publish public agent demos safely
+- demo datasets map back to governed Agent-Space metadata
 - demos map back to governed Agent-Space metadata
 - templates can be reused across teams
 
@@ -564,6 +631,7 @@ Must include:
 - create/list/read/update/archive spaces
 - members and roles
 - sources
+- datasets by reference
 - artifacts
 - run scoping
 - local dev storage
@@ -581,18 +649,19 @@ Should not include yet:
 - multi-region replication
 - complex storage migration
 - full compliance automation
+- full managed dataset hosting
 
 ## Release plan
 
 | Release | Name | Focus |
 |---|---|---|
 | v0.1 | Space Contract | Schemas, lifecycle, docs, API draft. |
-| v0.2 | Space Core | CRUD APIs, members, sources, run scoping. |
-| v0.3 | Space Console | Product UI for spaces, members, sources, runs, artifacts. |
-| v0.4 | Space Storage | S3-compatible adapter, RustFS profile, artifact registry. |
-| v0.5 | Space Governance | OPA/OpenFGA hooks, audit, approvals, retention. |
-| v0.6 | Space Runtime | Workers, branches, cron, memory/tool/file access enforcement. |
-| v0.7 | Space Demos | Hugging Face Spaces templates and safe demo workflows. |
+| v0.2 | Space Core | CRUD APIs, members, sources, datasets, run scoping. |
+| v0.3 | Space Console | Product UI for spaces, members, sources, datasets, runs, artifacts. |
+| v0.4 | Space Storage | S3-compatible adapter, RustFS profile, artifact and dataset registry. |
+| v0.5 | Space Governance | OPA/OpenFGA hooks, audit, approvals, retention, dataset license checks. |
+| v0.6 | Space Runtime | Workers, branches, cron, memory/tool/file/dataset access enforcement. |
+| v0.7 | Space Demos and Datasets | Hugging Face Spaces templates, Hugging Face Datasets templates, and safe publish workflows. |
 | v0.8 | Space Scale | CubeFS profile, backup/restore, migration, large datasets. |
 | v1.0 | Production Space | Hardened release with docs, tests, policies, operations, and security gates. |
 
@@ -609,8 +678,10 @@ Should not include yet:
 - implement local storage adapter
 - implement S3-compatible adapter
 - implement artifact registry
+- implement dataset registry
 - implement run scope validation
 - implement source attachment validation
+- implement dataset license/provenance validation
 
 ### Frontend
 
@@ -618,6 +689,8 @@ Should not include yet:
 - space overview page
 - member management
 - source attachment UI
+- dataset attachment UI
+- dataset card/license/split view
 - artifact browser
 - run history
 - audit timeline
@@ -632,12 +705,14 @@ Should not include yet:
 - define OPA policies
 - add deny-by-default checks
 - add approval gate model
+- add dataset allowed-use policy model
 - add retention policy model
 - add export/audit evidence format
 
 ### Integrations
 
 - Hugging Face Spaces templates
+- Hugging Face Datasets source and publishing contract
 - Spacedrive-style source adapter contract
 - Spacebot-style channel/worker/branch model
 - RustFS deployment notes
@@ -665,6 +740,9 @@ Should not include yet:
 | Runs with space ID | Runtime scoping coverage. |
 | Unscoped run attempts blocked | Governance effectiveness. |
 | Sources attached per space | Context richness. |
+| Datasets attached per space | Dataset context richness. |
+| Dataset loads with space ID | Runtime dataset governance coverage. |
+| Dataset publish approvals | Safe public dataset workflow maturity. |
 | Artifacts created per space | Work output. |
 | Policy violations blocked | Safety and compliance. |
 | Audit exports generated | Enterprise readiness. |
@@ -679,6 +757,7 @@ Agent-Space should not become:
 - the identity provider
 - the final policy engine
 - the only file storage system
+- the only dataset hosting system
 - the only runtime executor
 - the memory database
 - the model router
@@ -696,7 +775,7 @@ Agent-Channel / Console / API
   ↓
 Agent-Space
   ↓
-Members + Sources + Memory Scope + Run Scope + Artifact Scope + Storage Binding
+Members + Sources + Datasets + Memory Scope + Run Scope + Artifact Scope + Storage Binding
   ↓
 Agent-IGA + OPA + OpenFGA + Audit
   ↓
@@ -710,13 +789,16 @@ Runtime / Storage / Memory / Tools / Integrations
 - [ ] Every run requires `space_id`
 - [ ] Every artifact includes `space_id`
 - [ ] Every source includes provenance
+- [ ] Every dataset includes provenance, license, visibility, and allowed-use metadata
 - [ ] Every member has a role
 - [ ] Every lifecycle transition is audited
 - [ ] Every storage binding has a policy
 - [ ] Every public demo space is marked as demo-safe
+- [ ] Every public dataset publish requires approval
 - [ ] Every tool call is scoped
 - [ ] Every memory read is scoped
 - [ ] Every file read/write is scoped
+- [ ] Every dataset load/stream/transform/export/publish is scoped and audited
 - [ ] Every export is audited
 - [ ] Every archived space is read-only
 - [ ] Every retired space has a recovery or deletion policy
