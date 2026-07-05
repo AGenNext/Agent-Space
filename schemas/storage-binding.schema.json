@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agennext.dev/schemas/agent-space/storage-binding.schema.json",
+  "title": "Agent-Space Storage Binding",
+  "description": "Storage backend binding attached to an Agent-Space boundary.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "space_id", "provider", "purpose", "status", "created_at", "updated_at"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^storage:[a-zA-Z0-9][a-zA-Z0-9-_.:@]{1,191}$"
+    },
+    "space_id": {
+      "type": "string",
+      "pattern": "^space:[a-z0-9][a-z0-9-_.]{1,127}$"
+    },
+    "provider": {
+      "type": "string",
+      "enum": ["local", "rustfs", "cubefs", "s3", "gcs", "azure-blob", "huggingface", "other"]
+    },
+    "access_protocols": {
+      "type": "array",
+      "items": { "type": "string", "enum": ["file", "s3", "posix", "hdfs", "csi", "http"] },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "purpose": {
+      "type": "string",
+      "enum": ["artifacts", "datasets", "evidence", "runtime-volumes", "archive", "demo-assets", "backups"]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "active", "restricted", "read-only", "archived", "retired"]
+    },
+    "classification": {
+      "type": "string",
+      "enum": ["public", "internal", "confidential", "restricted"]
+    },
+    "endpoint_ref": {
+      "type": "string",
+      "maxLength": 2048
+    },
+    "bucket_or_volume": {
+      "type": "string",
+      "maxLength": 512
+    },
+    "versioning": {
+      "type": "boolean",
+      "default": true
+    },
+    "object_lock": {
+      "type": "boolean",
+      "default": false
+    },
+    "retention_policy_id": {
+      "type": "string",
+      "pattern": "^policy:[a-zA-Z0-9][a-zA-Z0-9-_.:@]{1,191}$"
+    },
+    "audit": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "reads": { "type": "boolean", "default": true },
+        "writes": { "type": "boolean", "default": true },
+        "deletes": { "type": "boolean", "default": true },
+        "exports": { "type": "boolean", "default": true }
+      }
+    },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" }
+  }
+}
