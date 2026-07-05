@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agennext.dev/schemas/agent-space/space.schema.json",
+  "title": "Agent-Space Space",
+  "description": "Canonical governed workspace boundary for AGenNext agentic work.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "name",
+    "type",
+    "status",
+    "classification",
+    "owner_id",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^space:[a-z0-9][a-z0-9-_.]{1,127}$",
+      "examples": ["space:customer-acme", "space:agent-platform-dev"]
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 2000
+    },
+    "type": {
+      "type": "string",
+      "enum": ["personal", "team", "project", "tenant", "customer", "lab", "production", "demo", "archive", "compliance-review"]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "active", "restricted", "review", "archived", "retired"]
+    },
+    "classification": {
+      "type": "string",
+      "enum": ["public", "internal", "confidential", "restricted"]
+    },
+    "owner_id": {
+      "type": "string",
+      "pattern": "^(user|agent|team|org):[a-zA-Z0-9][a-zA-Z0-9-_.:@]{1,191}$"
+    },
+    "parent_space_id": {
+      "type": "string",
+      "pattern": "^space:[a-z0-9][a-z0-9-_.]{1,127}$"
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1, "maxLength": 64 },
+      "uniqueItems": true,
+      "default": []
+    },
+    "policy_refs": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^policy:[a-zA-Z0-9][a-zA-Z0-9-_.:@]{1,191}$" },
+      "uniqueItems": true,
+      "default": []
+    },
+    "storage_binding_refs": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^storage:[a-zA-Z0-9][a-zA-Z0-9-_.:@]{1,191}$" },
+      "uniqueItems": true,
+      "default": []
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "archived_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "retired_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}
