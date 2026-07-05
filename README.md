@@ -46,6 +46,16 @@ Agent-Space does not own:
 | Agent-Platform | Final authority and orchestration |
 | Agent-Team | Teams operating inside spaces |
 
+## Reference integrations
+
+| Reference | Role in Agent-Space |
+|---|---|
+| [Hugging Face Spaces](docs/hugging-face-spaces.md) | Public ML, agent, Gradio, Docker, and static demo surfaces mapped to governed spaces. |
+| [Spacedrive](docs/spacedrive.md) | Local-first file, device, cloud, and source surface for space context discovery. |
+| [Spacebot](docs/spacebot.md) | Agent/team operating model with channels, workers, branches, memory, cron, and adapters. |
+| [RustFS](docs/rustfs.md) | S3-compatible object storage backend for artifacts, datasets, evidence, and traces. |
+| [CubeFS](docs/cubefs.md) | CNCF-aligned multi-protocol distributed storage for S3, POSIX, HDFS, and CSI workloads. |
+
 ## Space examples
 
 ```txt
