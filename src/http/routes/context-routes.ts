@@ -1,5 +1,12 @@
 import type { FastifyInstance } from "fastify";
 import type { SpaceContextService } from "../../services/space-context-service.js";
+import {
+  addMemberSchema,
+  attachSourceSchema,
+  createArtifactSchema,
+  createStorageBindingSchema,
+  validateBody
+} from "../validation.js";
 
 export async function registerContextRoutes(app: FastifyInstance, service: SpaceContextService): Promise<void> {
   app.get("/v1/spaces/:space_id/members", async (request) => {
@@ -9,7 +16,8 @@ export async function registerContextRoutes(app: FastifyInstance, service: Space
 
   app.post("/v1/spaces/:space_id/members", async (request, reply) => {
     const { space_id } = request.params as { space_id: string };
-    const member = await service.addMember(space_id, request.body as any);
+    const input = validateBody(addMemberSchema, request);
+    const member = await service.addMember(space_id, input);
     return reply.code(201).send(member);
   });
 
@@ -20,7 +28,8 @@ export async function registerContextRoutes(app: FastifyInstance, service: Space
 
   app.post("/v1/spaces/:space_id/sources", async (request, reply) => {
     const { space_id } = request.params as { space_id: string };
-    const source = await service.attachSource(space_id, request.body as any);
+    const input = validateBody(attachSourceSchema, request);
+    const source = await service.attachSource(space_id, input);
     return reply.code(201).send(source);
   });
 
@@ -31,7 +40,8 @@ export async function registerContextRoutes(app: FastifyInstance, service: Space
 
   app.post("/v1/spaces/:space_id/artifacts", async (request, reply) => {
     const { space_id } = request.params as { space_id: string };
-    const artifact = await service.createArtifact(space_id, request.body as any);
+    const input = validateBody(createArtifactSchema, request);
+    const artifact = await service.createArtifact(space_id, input);
     return reply.code(201).send(artifact);
   });
 
@@ -42,7 +52,8 @@ export async function registerContextRoutes(app: FastifyInstance, service: Space
 
   app.post("/v1/spaces/:space_id/storage-bindings", async (request, reply) => {
     const { space_id } = request.params as { space_id: string };
-    const binding = await service.createStorageBinding(space_id, request.body as any);
+    const input = validateBody(createStorageBindingSchema, request);
+    const binding = await service.createStorageBinding(space_id, input);
     return reply.code(201).send(binding);
   });
 }
