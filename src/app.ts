@@ -3,9 +3,17 @@ import swagger from "@fastify/swagger";
 import swaggerUi from "@fastify/swagger-ui";
 import Fastify from "fastify";
 import { registerErrorHandler } from "./http/error-handler.js";
+import { registerContextRoutes } from "./http/routes/context-routes.js";
 import { registerHealthRoutes } from "./http/routes/health-routes.js";
 import { registerSpaceRoutes } from "./http/routes/space-routes.js";
+import {
+  InMemorySpaceArtifactRepository,
+  InMemorySpaceMemberRepository,
+  InMemorySpaceSourceRepository,
+  InMemoryStorageBindingRepository
+} from "./repositories/child-repositories.js";
 import { InMemorySpaceRepository } from "./repositories/space-repository.js";
+import { SpaceContextService } from "./services/space-context-service.js";
 import { SpaceService } from "./services/space-service.js";
 
 export async function buildApp() {
@@ -24,10 +32,18 @@ export async function buildApp() {
 
   const spaceRepository = new InMemorySpaceRepository();
   const spaceService = new SpaceService(spaceRepository);
+  const spaceContextService = new SpaceContextService(
+    spaceRepository,
+    new InMemorySpaceMemberRepository(),
+    new InMemorySpaceSourceRepository(),
+    new InMemorySpaceArtifactRepository(),
+    new InMemoryStorageBindingRepository()
+  );
 
   registerErrorHandler(app);
   await registerHealthRoutes(app);
   await registerSpaceRoutes(app, spaceService);
+  await registerContextRoutes(app, spaceContextService);
 
   return app;
 }
