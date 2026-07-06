@@ -12,6 +12,55 @@ A space can represent a tenant, project, team, customer environment, operational
 
 - [Product Roadmap](ROADMAP.md)
 
+## Service
+
+This repo now includes an initial TypeScript/Fastify service skeleton for the Agent-Space API.
+
+```bash
+npm install
+npm run dev
+```
+
+The service starts on `http://localhost:8080` by default.
+
+```bash
+curl http://localhost:8080/healthz
+curl http://localhost:8080/readyz
+curl http://localhost:8080/v1/spaces
+```
+
+API docs are exposed at:
+
+```txt
+http://localhost:8080/docs
+```
+
+### Build and test
+
+```bash
+npm run build
+npm test
+npm run validate:openapi
+```
+
+### Docker
+
+```bash
+docker build -t agennext/agent-space:local .
+docker run --rm -p 8080:8080 agennext/agent-space:local
+```
+
+## Contracts
+
+| Contract | Path |
+|---|---|
+| OpenAPI | [openapi/agent-space.openapi.yaml](openapi/agent-space.openapi.yaml) |
+| Space schema | [schemas/space.schema.json](schemas/space.schema.json) |
+| Space member schema | [schemas/space-member.schema.json](schemas/space-member.schema.json) |
+| Space source schema | [schemas/space-source.schema.json](schemas/space-source.schema.json) |
+| Space artifact schema | [schemas/space-artifact.schema.json](schemas/space-artifact.schema.json) |
+| Storage binding schema | [schemas/storage-binding.schema.json](schemas/storage-binding.schema.json) |
+
 ## Scope
 
 Agent-Space owns:
