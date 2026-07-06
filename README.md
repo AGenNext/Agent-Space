@@ -50,6 +50,32 @@ docker build -t agennext/agent-space:local .
 docker run --rm -p 8080:8080 agennext/agent-space:local
 ```
 
+## API surface
+
+### Core spaces
+
+```txt
+GET    /v1/spaces
+POST   /v1/spaces
+GET    /v1/spaces/:space_id
+PATCH  /v1/spaces/:space_id
+POST   /v1/spaces/:space_id/archive
+POST   /v1/spaces/:space_id/retire
+```
+
+### Space context
+
+```txt
+GET    /v1/spaces/:space_id/members
+POST   /v1/spaces/:space_id/members
+GET    /v1/spaces/:space_id/sources
+POST   /v1/spaces/:space_id/sources
+GET    /v1/spaces/:space_id/artifacts
+POST   /v1/spaces/:space_id/artifacts
+GET    /v1/spaces/:space_id/storage-bindings
+POST   /v1/spaces/:space_id/storage-bindings
+```
+
 ## Contracts
 
 | Contract | Path |
