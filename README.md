@@ -52,6 +52,8 @@ docker run --rm -p 8080:8080 agennext/agent-space:local
 
 ## API surface
 
+Requests are validated with Zod before they reach the service layer. Invalid requests return a structured `validation_error` response.
+
 ### Core spaces
 
 ```txt
@@ -74,7 +76,21 @@ GET    /v1/spaces/:space_id/artifacts
 POST   /v1/spaces/:space_id/artifacts
 GET    /v1/spaces/:space_id/storage-bindings
 POST   /v1/spaces/:space_id/storage-bindings
+GET    /v1/spaces/:space_id/audit
 ```
+
+## Audit events
+
+The service records in-memory audit events for:
+
+- `space.created`
+- `space.updated`
+- `space.archived`
+- `space.retired`
+- `space.member.added`
+- `space.source.attached`
+- `space.artifact.created`
+- `space.storage_binding.created`
 
 ## Contracts
 
