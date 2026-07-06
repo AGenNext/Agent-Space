@@ -1,6 +1,7 @@
 import { createId, nowIso } from "../domain/ids.js";
 import type { Classification, Space, SpaceType } from "../domain/types.js";
 import type { SpaceRepository } from "../repositories/space-repository.js";
+import type { AuditService } from "./audit-service.js";
 
 export interface CreateSpaceInput {
   name: string;
@@ -21,7 +22,10 @@ export interface UpdateSpaceInput {
 }
 
 export class SpaceService {
-  constructor(private readonly repository: SpaceRepository) {}
+  constructor(
+    private readonly repository: SpaceRepository,
+    private readonly audit?: AuditService
+  ) {}
 
   listSpaces(): Promise<Space[]> {
     return this.repository.list();
@@ -31,7 +35,7 @@ export class SpaceService {
     return this.repository.get(spaceId);
   }
 
-  createSpace(input: CreateSpaceInput): Promise<Space> {
+  async createSpace(input: CreateSpaceInput): Promise<Space> {
     const timestamp = nowIso();
     const space: Space = {
       id: createId("space"),
@@ -49,24 +53,43 @@ export class SpaceService {
       updated_at: timestamp
     };
 
-    return this.repository.create(space);
+    const created = await this.repository.create(space);
+    await this.audit?.record({
+      space_id: created.id,
+      action: "space.created",
+      actor_id: input.owner_id,
+      target_id: created.id,
+      metadata: { type: created.type, classification: created.classification }
+    });
+    return created;
   }
 
-  updateSpace(spaceId: string, input: UpdateSpaceInput): Promise<Space> {
-    return this.repository.update(spaceId, input);
+  async updateSpace(spaceId: string, input: UpdateSpaceInput): Promise<Space> {
+    const updated = await this.repository.update(spaceId, input);
+    await this.audit?.record({
+      space_id: spaceId,
+      action: "space.updated",
+      target_id: spaceId,
+      metadata: input
+    });
+    return updated;
   }
 
-  archiveSpace(spaceId: string): Promise<Space> {
-    return this.repository.update(spaceId, {
+  async archiveSpace(spaceId: string): Promise<Space> {
+    const archived = await this.repository.update(spaceId, {
       status: "archived",
       archived_at: nowIso()
     });
+    await this.audit?.record({ space_id: spaceId, action: "space.archived", target_id: spaceId });
+    return archived;
   }
 
-  retireSpace(spaceId: string): Promise<Space> {
-    return this.repository.update(spaceId, {
+  async retireSpace(spaceId: string): Promise<Space> {
+    const retired = await this.repository.update(spaceId, {
       status: "retired",
       retired_at: nowIso()
     });
+    await this.audit?.record({ space_id: spaceId, action: "space.retired", target_id: spaceId });
+    return retired;
   }
 }
