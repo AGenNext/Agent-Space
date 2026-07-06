@@ -7,6 +7,7 @@ import type {
   StorageBindingRepository
 } from "../repositories/child-repositories.js";
 import type { SpaceRepository } from "../repositories/space-repository.js";
+import type { AuditService } from "./audit-service.js";
 
 export interface AddMemberInput {
   principal_id: string;
@@ -55,7 +56,8 @@ export class SpaceContextService {
     private readonly members: SpaceMemberRepository,
     private readonly sources: SpaceSourceRepository,
     private readonly artifacts: SpaceArtifactRepository,
-    private readonly storageBindings: StorageBindingRepository
+    private readonly storageBindings: StorageBindingRepository,
+    private readonly audit?: AuditService
   ) {}
 
   async listMembers(spaceId: string): Promise<SpaceMember[]> {
@@ -66,7 +68,7 @@ export class SpaceContextService {
   async addMember(spaceId: string, input: AddMemberInput): Promise<SpaceMember> {
     await this.spaces.get(spaceId);
     const timestamp = nowIso();
-    return this.members.create({
+    const member = await this.members.create({
       id: createId("member"),
       space_id: spaceId,
       principal_id: input.principal_id,
@@ -77,6 +79,16 @@ export class SpaceContextService {
       created_at: timestamp,
       updated_at: timestamp
     });
+
+    await this.audit?.record({
+      space_id: spaceId,
+      action: "space.member.added",
+      actor_id: input.granted_by,
+      target_id: member.id,
+      metadata: { principal_id: member.principal_id, role: member.role }
+    });
+
+    return member;
   }
 
   async listSources(spaceId: string): Promise<SpaceSource[]> {
@@ -87,7 +99,7 @@ export class SpaceContextService {
   async attachSource(spaceId: string, input: AttachSourceInput): Promise<SpaceSource> {
     await this.spaces.get(spaceId);
     const timestamp = nowIso();
-    return this.sources.create({
+    const source = await this.sources.create({
       id: createId("source"),
       space_id: spaceId,
       type: input.type,
@@ -101,6 +113,15 @@ export class SpaceContextService {
       created_at: timestamp,
       updated_at: timestamp
     });
+
+    await this.audit?.record({
+      space_id: spaceId,
+      action: "space.source.attached",
+      target_id: source.id,
+      metadata: { provider: source.provider, type: source.type, classification: source.classification }
+    });
+
+    return source;
   }
 
   async listArtifacts(spaceId: string): Promise<SpaceArtifact[]> {
@@ -111,7 +132,7 @@ export class SpaceContextService {
   async createArtifact(spaceId: string, input: CreateArtifactInput): Promise<SpaceArtifact> {
     await this.spaces.get(spaceId);
     const timestamp = nowIso();
-    return this.artifacts.create({
+    const artifact = await this.artifacts.create({
       id: createId("artifact"),
       space_id: spaceId,
       run_id: input.run_id,
@@ -127,6 +148,16 @@ export class SpaceContextService {
       created_at: timestamp,
       updated_at: timestamp
     });
+
+    await this.audit?.record({
+      space_id: spaceId,
+      action: "space.artifact.created",
+      actor_id: input.agent_id,
+      target_id: artifact.id,
+      metadata: { type: artifact.type, retention_class: artifact.retention_class }
+    });
+
+    return artifact;
   }
 
   async listStorageBindings(spaceId: string): Promise<StorageBinding[]> {
@@ -137,7 +168,7 @@ export class SpaceContextService {
   async createStorageBinding(spaceId: string, input: CreateStorageBindingInput): Promise<StorageBinding> {
     await this.spaces.get(spaceId);
     const timestamp = nowIso();
-    return this.storageBindings.create({
+    const binding = await this.storageBindings.create({
       id: createId("storage"),
       space_id: spaceId,
       provider: input.provider,
@@ -159,5 +190,14 @@ export class SpaceContextService {
       created_at: timestamp,
       updated_at: timestamp
     });
+
+    await this.audit?.record({
+      space_id: spaceId,
+      action: "space.storage_binding.created",
+      target_id: binding.id,
+      metadata: { provider: binding.provider, purpose: binding.purpose, access_protocols: binding.access_protocols }
+    });
+
+    return binding;
   }
 }
